@@ -1,0 +1,40 @@
+name: Dependency Checks
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.12"]
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install the hashed dependency tree
+        run: python -m pip install --require-hashes --only-binary=:all: -r requirements.lock
+      - name: Check dependency consistency
+        run: python -m pip check
+      - name: Audit the hashed application dependency tree
+        run: |
+          python -m venv "$RUNNER_TEMP/dependency-audit"
+          "$RUNNER_TEMP/dependency-audit/bin/python" -m pip install --only-binary=:all: pip-audit==2.10.1
+          "$RUNNER_TEMP/dependency-audit/bin/python" -m pip_audit -r requirements.lock --require-hashes --no-deps --disable-pip
+      - name: Exercise HTTP scraping and Flask route contracts
+        run: python -m unittest discover -s tests -v
