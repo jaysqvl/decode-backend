@@ -28,7 +28,14 @@ This was both of our first times working on a hybrid website/chrome extension pr
 new roles in our development journeys. Any opportunity I get to add a new tool to my toolkit is an exciting experience.
 
 ## Instructions
-1. See requirements.txt for the required modules/versions and install them
+Use Python 3.10 or newer (CI verifies Python 3.10 and 3.12). Install the reviewed
+dependency tree with `python -m pip install --require-hashes -r requirements.lock`.
+Direct dependency pins remain in `requirements.txt`; regenerate the hashed lock
+with `uv pip compile requirements.txt --python-version 3.10 --generate-hashes -o requirements.lock`.
+
+1. Run `python -m unittest discover -s tests -v` to check local HTTP scraping and
+   route contracts. The tests use synthetic data, not live retailers; the existing
+   calculator placeholder is deliberately left unchanged.
 
 2. Open a terminal in the root directory
 
